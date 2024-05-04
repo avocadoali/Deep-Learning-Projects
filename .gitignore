@@ -1,3 +1,4 @@
+datasets
 *.bundle.*
 lib/
 node_modules/
