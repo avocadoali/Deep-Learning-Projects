@@ -107,7 +107,7 @@ class NormalizeTransform:
         # TODO:                                                                #
         # normalize the given images:                                          #
         #   - substract the mean of dataset                                    #
-        #   - divide by standard deviation                                     #
+        #   - divide byResize main navigation standard deviation                                     #
         ########################################################################
 
         images = (images - self.mean) /  self.std
