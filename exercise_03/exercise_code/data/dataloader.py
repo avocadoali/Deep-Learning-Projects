@@ -55,8 +55,10 @@ class DataLoader:
         batch = []
         for index in index_iterator:  # iterate over indices using the iterator
             batch.append(dataset[index])
+
             if len(batch) == self.batch_size:
                 
+                # combine batch dicts
                 batch_dict = {}
                 for data_dict in batch:
                     for key, value in data_dict.items():
@@ -64,6 +66,7 @@ class DataLoader:
                             batch_dict[key] = []
                         batch_dict[key].append(value)
 
+                # combine batch dicts
                 numpy_batch = {}
                 for key, value in batch_dict.items():
                     numpy_batch[key] = np.array(value)
@@ -71,6 +74,23 @@ class DataLoader:
 
                 yield numpy_batch# use yield keyword to define a iterable generator
                 batch = []
+            
+        if not self.drop_last:
+            batch_dict = {}
+            for data_dict in batch:
+                for key, value in data_dict.items():
+                    if key not in batch_dict:
+                        batch_dict[key] = []
+                    batch_dict[key].append(value)
+
+            # combine batch dicts
+            numpy_batch = {}
+            for key, value in batch_dict.items():
+                numpy_batch[key] = np.array(value)
+         
+
+            yield numpy_batch# use yield keyword to define a iterable generator
+            batch = []
             
 
         ########################################################################
