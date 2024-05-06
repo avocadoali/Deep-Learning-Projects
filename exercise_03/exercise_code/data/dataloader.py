@@ -44,7 +44,34 @@ class DataLoader:
         #     in section 1 of the notebook.                                    #
         ########################################################################
         
-        pass
+
+        dataset = self.dataset
+
+        if self.shuffle:
+            index_iterator = iter(np.random.permutation(len(dataset)))  # define indices as iterator
+        else:
+            index_iterator = iter(range(len(dataset)))  # define indices as iterator
+        
+        batch = []
+        for index in index_iterator:  # iterate over indices using the iterator
+            batch.append(dataset[index])
+            if len(batch) == self.batch_size:
+                
+                batch_dict = {}
+                for data_dict in batch:
+                    for key, value in data_dict.items():
+                        if key not in batch_dict:
+                            batch_dict[key] = []
+                        batch_dict[key].append(value)
+
+                numpy_batch = {}
+                for key, value in batch_dict.items():
+                    numpy_batch[key] = np.array(value)
+         
+
+                yield numpy_batch# use yield keyword to define a iterable generator
+                batch = []
+            
 
         ########################################################################
         #                           END OF YOUR CODE                           #
