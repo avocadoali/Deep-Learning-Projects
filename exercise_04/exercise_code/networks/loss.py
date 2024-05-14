@@ -154,7 +154,8 @@ class BCE(Loss):
         #   the batch. It is crucial for the magnitude of the gradient.        #
         ########################################################################
 
- 
+        gradient = (y_out - y_truth) / (y_out * (1 - y_out) * len(y_out))
+
 
         ########################################################################
         #                           END OF YOUR CODE                           #
