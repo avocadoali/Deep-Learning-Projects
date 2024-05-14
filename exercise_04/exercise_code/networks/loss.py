@@ -119,11 +119,7 @@ class BCE(Loss):
         ########################################################################
 
         
-        # Avoiding numerical instability when taking the log of very small values
-        epsilon = 1e-15
-
-        # Calculating BCE loss
-        result = -(y_truth * np.log(y_out + epsilon) + (1 - y_truth) * np.log(1 - y_out + epsilon))
+        result = -(y_truth * np.log(y_out) + (1 - y_truth) * np.log(1 - y_out))
         
 
 
@@ -158,11 +154,6 @@ class BCE(Loss):
         #   the batch. It is crucial for the magnitude of the gradient.        #
         ########################################################################
 
-        # Avoiding numerical instability when dividing by very small values
-        epsilon = 1e-15
-        
-        # Calculating BCE loss gradient
-        gradient = -((y_truth / (y_out + epsilon)) - ((1 - y_truth) / (1 - y_out + epsilon)))
  
 
         ########################################################################
