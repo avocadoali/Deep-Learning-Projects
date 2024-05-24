@@ -1,0 +1,7 @@
+num_layers: 4, epochs: 7, reg: [0.0003], lr: [0.001], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
+num_layers: 4, epochs: 4, reg: [0.0003], lr: [0.001], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
+num_layers: 4, epochs: 5, reg: [0.0003], lr: [0.001], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
+num_layers: 4, epochs: 6, reg: [0.0003], lr: [0.001], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
+num_layers: 4, epochs: 7, reg: [0.0003  0.00065 0.001  ], lr: [0.001], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
+num_layers: 4, epochs: 7, reg: [0.0003  0.00065 0.001  ], lr: [1.e-04 1.e-05], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
+num_layers: 4, epochs: 7, reg: [0.0007], lr: [0.0001], full_data: True, stats: {'val_loss': 1.5091726443302405, 'train_loss': 1.3185045239431656}
