@@ -29,21 +29,17 @@ class Encoder(nn.Module):
         # We will have a closer look at this parameter later in the exercise.  #
         ########################################################################
 
-        # We can access the parameters here
         self.encoder = nn.Sequential(
 
-            nn.Linear(self.input_size,
-                      self.hparams["hidden_size"]),
+            nn.Linear(self.input_size, self.hparams["hidden_size"]),
             nn.BatchNorm1d(self.hparams['hidden_size']),
             nn.ReLU(),
 
-            nn.Linear(self.hparams["hidden_size"],
-                      self.hparams["hidden_size"]),
+            nn.Linear(self.hparams["hidden_size"], self.hparams["hidden_size"]),
             nn.BatchNorm1d(self.hparams['hidden_size']),
             nn.ReLU(),
 
-            nn.Linear(self.hparams["hidden_size"], 
-                      self.latent_dim),
+            nn.Linear(self.hparams["hidden_size"], self.latent_dim),
             nn.BatchNorm1d(self.latent_dim),
         )
 
@@ -69,8 +65,22 @@ class Decoder(nn.Module):
         # TODO: Initialize your decoder!                                       #
         ########################################################################
 
+        self.decoder = nn.Sequential(
 
-        pass
+            nn.Linear(latent_dim, self.hparams["hidden_size"]),
+            nn.BatchNorm1d(self.hparams['hidden_size']),
+            nn.ReLU(),
+
+            nn.Linear(self.hparams["hidden_size"],
+                      self.hparams["hidden_size"]),
+            nn.BatchNorm1d(self.hparams['hidden_size']),
+            nn.ReLU(),
+
+            nn.Linear(self.hparams["hidden_size"], output_size),
+            nn.BatchNorm1d(output_size)
+        )
+
+
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -101,7 +111,9 @@ class Autoencoder(nn.Module):
         #  of the input.                                                       #
         ########################################################################
 
-        pass
+
+        x = self.encoder(x)
+        reconstruction = self.decoder(x)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -115,7 +127,10 @@ class Autoencoder(nn.Module):
         # TODO: Define your optimizer.                                         #
         ########################################################################
 
-        pass
+        self.optimizer = torch.optim.Adam(
+            list(self.encoder.parameters()) + list(self.decoder.parameters()),
+            self.hparams['learning_rate']
+        )
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -145,9 +160,17 @@ class Autoencoder(nn.Module):
         # Hint 4:                                                              #
         # Don't forget to move the data to the correct device!                 #                                     
         ########################################################################
+        self.optimizer.zero_grad()
 
-
-        pass
+        self.train()
+    
+        images = batch.view(batch.shape[0], -1)
+   
+        # Forward pass: Compute the model output
+        pred = self.forward(images)
+        loss = loss_func(pred, images)
+        loss.backward()
+        self.optimizer.step()
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -169,9 +192,13 @@ class Autoencoder(nn.Module):
         # Here we don't supply as many tips. Make sure you follow the pipeline #
         # from the notebook.                                                   #
         ########################################################################
+        
+    
+        images = batch.view(batch.shape[0], -1)
 
-
-        pass
+        pred = self.forward(images)
+        loss = loss_func(pred, images)
+ 
 
         ########################################################################
         #                           END OF YOUR CODE                           #
