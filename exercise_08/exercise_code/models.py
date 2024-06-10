@@ -44,7 +44,7 @@ class Encoder(nn.Module):
 
             nn.Linear(self.hparams["hidden_size"], 
                       self.latent_dim),
-
+            nn.BatchNorm1d(self.latent_dim),
         )
 
 
@@ -217,6 +217,7 @@ class Classifier(nn.Module):
         input_size = encoder.latent_dim
 
         self.model = nn.Sequential(
+
             nn.Linear(input_size,
                       self.hparams['hidden_size']),
             nn.ReLU(),
