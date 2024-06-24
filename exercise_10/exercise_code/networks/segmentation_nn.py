@@ -1,6 +1,7 @@
 """SegmentationNN"""
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class SegmentationNN(nn.Module):
@@ -46,10 +47,13 @@ class SegmentationNN(nn.Module):
     def down_block(self, input_channel, output_channel):
         block = nn.Sequential(
             nn.Conv2d(input_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
+            nn.BatchNorm2d(output_channel),
             nn.ReLU(), 
             nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
+            nn.BatchNorm2d(output_channel),
             nn.ReLU(), 
-             nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
+            nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
+            nn.BatchNorm2d(output_channel),
             nn.ReLU(), 
             nn.MaxPool2d(2, 2)
         )
@@ -61,8 +65,10 @@ class SegmentationNN(nn.Module):
             nn.ConvTranspose2d(input_channel, output_channel, kernel_size=4 , stride=self.stride_up, padding=self.padding),
             nn.ReLU(), 
             nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=1, padding = self.padding),
+            nn.BatchNorm2d(output_channel),
             nn.ReLU(), 
             nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=1, padding = self.padding),
+            nn.BatchNorm2d(output_channel),
             nn.ReLU(), 
         )
         return block
@@ -78,13 +84,24 @@ class SegmentationNN(nn.Module):
         #######################################################################
         #                             YOUR CODE                               #
         #######################################################################
+        skip_connections = []
 
         for down_layer in self.down_layers:
             x = down_layer(x)
+            skip_connections.append(x)
+
         
+        # reverse order
+        skip_connections = skip_connections[::-1]
+
 
         for up_layer in self.up_layers:
-            x = up_layer(x)
+            skip_connection = skip_connections.pop()
+            if x.shape != skip_connection.shape:
+                x = F.pad(x, [0, skip_connection.shape[3] - x.shape[3], 0, skip_connection.shape[2] - x.shape[2]])
+            ;
+            concat_skip = torch.cat((skip_connection, x), dim=1)
+            x = up_layer(concat_skip)
 
 
         x = self.output_layer(x)
