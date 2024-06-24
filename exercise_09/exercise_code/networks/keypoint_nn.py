@@ -36,7 +36,7 @@ class KeypointModel(nn.Module):
         layers = []
 
         # TODO conv layers + max pooling layers
-        layers.append(nn.Conv2d(1, 6, 5, stride=1, padding=2))
+        layers.append(nn.Conv2d(1, 6, kernel_size= 5, stride=1, padding=2))
         layers.append(nn.Sigmoid())
         layers.append(nn.MaxPool2d(2, 2))
 

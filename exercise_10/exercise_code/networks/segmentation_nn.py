@@ -13,7 +13,8 @@ class SegmentationNN(nn.Module):
         #######################################################################
         self.num_classes = num_classes
         self.padding = self.hp['padding']
-        self.stride= self.hp['stride']
+        self.stride_down= self.hp['stride_down']
+        self.stride_up= self.hp['stride_up']
     
         #######################################################################
         #                           END OF YOUR CODE                          #
@@ -22,26 +23,33 @@ class SegmentationNN(nn.Module):
         # Downsampling layers
         down_block = []
         down_block.append(self.down_block(3, 64 ))
-        # down_block.append(self.down_block(64, 128))
-        #down_block.append(self.down_block(128, 256))
+        down_block.append(self.down_block(64, 128))
+        down_block.append(self.down_block(128, 256))
 
         self.down_layers = nn.ModuleList(down_block)
  
         # Upsampling layers
         up_block = []
-        #up_block.append(self.up_block(256, 128))
-        # up_block.append(self.up_block(128, 64))
+        up_block.append(self.up_block(256, 128))
+        up_block.append(self.up_block(128, 64))
+
         self.up_layers = nn.ModuleList(up_block)
 
         # Output Layer
-        self.output_layer = nn.Conv2d(64, self.num_classes, kernel_size=1)
+        self.output_layer = nn.Sequential(
+            nn.ConvTranspose2d(64, 32, kernel_size=4 , stride=self.stride_up, padding=self.padding),
+            nn.Conv2d(32, self.num_classes, kernel_size=1), 
+        )
+
 
  
     def down_block(self, input_channel, output_channel):
         block = nn.Sequential(
-            nn.Conv2d(input_channel, output_channel, kernel_size=3 , stride=self.stride, padding=self.padding),
+            nn.Conv2d(input_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
             nn.ReLU(), 
-            nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride, padding=self.padding),
+            nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
+            nn.ReLU(), 
+             nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
             nn.ReLU(), 
             nn.MaxPool2d(2, 2)
         )
@@ -50,13 +58,12 @@ class SegmentationNN(nn.Module):
 
     def up_block(self, input_channel, output_channel):
         block = nn.Sequential(
-            nn.ConvTranspose2d(input_channel, input_channel, kernel_size=3 , stride=self.stride, padding=self.padding),
+            nn.ConvTranspose2d(input_channel, output_channel, kernel_size=4 , stride=self.stride_up, padding=self.padding),
             nn.ReLU(), 
-            nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=self.stride, padding = self.padding),
+            nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=1, padding = self.padding),
             nn.ReLU(), 
-            nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=self.stride, padding = self.padding),
+            nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=1, padding = self.padding),
             nn.ReLU(), 
-            nn.MaxPool2d(2, 2)
         )
         return block
 
@@ -72,17 +79,13 @@ class SegmentationNN(nn.Module):
         #                             YOUR CODE                               #
         #######################################################################
 
-        skip_connections = []
-
         for down_layer in self.down_layers:
             x = down_layer(x)
-            skip_connections.append(x)
         
-
 
         for up_layer in self.up_layers:
             x = up_layer(x)
-            skip = skip_connections.pop()
+
 
         x = self.output_layer(x)
 
