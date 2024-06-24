@@ -57,6 +57,7 @@ class KeypointModel(nn.Module):
         layers.append(nn.Tanh())
 
         self.layers = nn.ModuleList(layers)
+
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################

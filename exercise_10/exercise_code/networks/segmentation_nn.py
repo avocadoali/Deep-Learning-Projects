@@ -11,16 +11,59 @@ class SegmentationNN(nn.Module):
         #######################################################################
         #                             YOUR CODE                               #
         #######################################################################
-
+        self.num_classes = num_classes
+        self.padding = self.hp['padding']
+        self.stride= self.hp['stride']
     
         #######################################################################
         #                           END OF YOUR CODE                          #
         #######################################################################
 
+        # Downsampling layers
+        down_block = []
+        down_block.append(self.down_block(3, 64 ))
+        # down_block.append(self.down_block(64, 128))
+        #down_block.append(self.down_block(128, 256))
+
+        self.down_layers = nn.ModuleList(down_block)
+ 
+        # Upsampling layers
+        up_block = []
+        #up_block.append(self.up_block(256, 128))
+        # up_block.append(self.up_block(128, 64))
+        self.up_layers = nn.ModuleList(up_block)
+
+        # Output Layer
+        self.output_layer = nn.Conv2d(64, self.num_classes, kernel_size=1)
+
+ 
+    def down_block(self, input_channel, output_channel):
+        block = nn.Sequential(
+            nn.Conv2d(input_channel, output_channel, kernel_size=3 , stride=self.stride, padding=self.padding),
+            nn.ReLU(), 
+            nn.Conv2d(output_channel, output_channel, kernel_size=3 , stride=self.stride, padding=self.padding),
+            nn.ReLU(), 
+            nn.MaxPool2d(2, 2)
+        )
+
+        return block
+
+    def up_block(self, input_channel, output_channel):
+        block = nn.Sequential(
+            nn.ConvTranspose2d(input_channel, input_channel, kernel_size=3 , stride=self.stride, padding=self.padding),
+            nn.ReLU(), 
+            nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=self.stride, padding = self.padding),
+            nn.ReLU(), 
+            nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=self.stride, padding = self.padding),
+            nn.ReLU(), 
+            nn.MaxPool2d(2, 2)
+        )
+        return block
+
     def forward(self, x):
         """
         Forward pass of the convolutional neural network. Should not be called
-        manually but by calling a model instance directly.
+        manually but by calling a model instance directlyprint(device).
 
         Inputs:
         - x: PyTorch input Variable
@@ -29,7 +72,20 @@ class SegmentationNN(nn.Module):
         #                             YOUR CODE                               #
         #######################################################################
 
+        skip_connections = []
+
+        for down_layer in self.down_layers:
+            x = down_layer(x)
+            skip_connections.append(x)
         
+
+
+        for up_layer in self.up_layers:
+            x = up_layer(x)
+            skip = skip_connections.pop()
+
+        x = self.output_layer(x)
+
         #######################################################################
         #                           END OF YOUR CODE                          #
         #######################################################################
