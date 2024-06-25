@@ -19,8 +19,8 @@ from torch.utils.data import DataLoader
 #set up default cuda device
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# device = 'cpu'
-device = 'cuda:0'
+device = 'cpu'
+# device = 'cuda:0'
 
 download_url = 'https://i2dl.vc.in.tum.de/static/data/segmentation_data.zip'
 i2dl_exercises_path = os.path.dirname(os.path.abspath(os.getcwd()))
@@ -106,7 +106,8 @@ hparams = {
 
 
 # Step 1: Initialize model with the best available weights
-alexNet = AlexNet(pe)
+alexNet = AlexNet('IMAGENET1K_V1')
+
 
 model = SegmentationNN(hp = hparams, alexNet=alexNet)
 optimizer = torch.optim.Adam(model.parameters(), lr=hparams['learning_rate'])
