@@ -4,11 +4,13 @@ import os
 import torch
 import wandb
 
+from torchvision.io import read_image
+from torchvision.models import AlexNet, AlexNet_Weights
 from exercise_code.data.segmentation_dataset import SegmentationData, label_img_to_rgb
 from exercise_code.data.download_utils import download_dataset
 from exercise_code.util import visualizer, save_model
 from exercise_code.util.Util import checkSize, checkParams, test
-from exercise_code.networks.segmentation_nn import SegmentationNN, DummySegmentationModel
+from exercise_code.networks.segmentation_nn_alexnet import SegmentationNN, DummySegmentationModel
 from exercise_code.tests import test_seg_nn
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -45,54 +47,38 @@ def train_model(epochs: int, train_loader: DataLoader, val_loader: DataLoader, m
             images, targets = images.to(device), targets.to(device)
             optimizer.zero_grad()
             preds = model(images)
-            loss = loss_func(preds, targets)
-            loss.backward()
-            optimizer.step()
-            training_loss += loss.item()
+            print('')
+            print(preds.shape)
+            # loss = loss_func(preds, targets)
+            # loss.backward()
+            # optimizer.step()
+            # training_loss += loss.item()
 
-        #try:
-        #    for batch in tqdm(train_loader, desc=f"Training Epoch {epoch + 1}/{epochs}"):
-        #        images, targets = batch
-        #        images, targets = images.to(device), targets.to(device)
-        #        optimizer.zero_grad()
-        #        preds = model(images)
-        #        loss = loss_func(preds, targets)
-        #        loss.backward()
-        #        optimizer.step()
-        #        training_loss += loss.item()
+    #     torch.cuda.empty_cache()
 
-        #except Exception as e:
-        #        print(f"Error during forward pass: {e}")
-        #        del images, targets
-        #        torch.cuda.empty_cache()
-
-
-
-        torch.cuda.empty_cache()
-
-       # Validation phase
-        model.eval()
-        validation_loss = 0.0
-        with torch.no_grad():
-            for batch in tqdm(val_loader, desc=f"Validation Epoch {epoch + 1}/{epochs}"):
-                images, targets = batch
-                images, targets = images.to(device), targets.to(device)
-                preds = model(images)
-                loss = loss_func(preds, targets)
-                validation_loss += loss.item()
+    #    # Validation phase
+    #     model.eval()
+    #     validation_loss = 0.0
+    #     with torch.no_grad():
+    #         for batch in tqdm(val_loader, desc=f"Validation Epoch {epoch + 1}/{epochs}"):
+    #             images, targets = batch
+    #             images, targets = images.to(device), targets.to(device)
+    #             preds = model(images)
+    #             loss = loss_func(preds, targets)
+    #             validation_loss += loss.item()
             
 
-        # Calculate average losses
-        train_loss = training_loss / len(train_loader)
-        val_loss = validation_loss / len(val_loader)
-        print(f'EPOCH [{epoch + 1}/{epochs}], Training Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}')
+    #     # Calculate average losses
+    #     train_loss = training_loss / len(train_loader)
+    #     val_loss = validation_loss / len(val_loader)
+    #     print(f'EPOCH [{epoch + 1}/{epochs}], Training Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}')
 
-        # Log the metrics to wandb
-        wandb.log({
-            'epoch': epoch + 1,
-            'train_loss': train_loss,
-            'val_loss': val_loss,
-        })
+    #     # Log the metrics to wandb
+    #     wandb.log({
+    #         'epoch': epoch + 1,
+    #         'train_loss': train_loss,
+    #         'val_loss': val_loss,
+    #     })
 
     print('done')
     return model
@@ -107,17 +93,22 @@ hparams = {
     'stride_up' : 2
 }
 
-# Initialize wandb
-wandb.init(
-    project="my-awesome-project",
-    config=hparams
-)
-wandb.config.learning_rate = hparams['learning_rate']
-wandb.config.batch_size = hparams['batch_size']
-wandb.config.epochs= hparams['epochs']
+# # Initialize wandb
+# wandb.init(
+#     project="my-awesome-project",
+#     config=hparams
+# )
+# wandb.config.learning_rate = hparams['learning_rate']
+# wandb.config.batch_size = hparams['batch_size']
+# wandb.config.epochs= hparams['epochs']
 
 # Initialize model, optimizer, loss function, and data loaders
-model = SegmentationNN(hp = hparams)
+
+
+# Step 1: Initialize model with the best available weights
+alexNet = AlexNet(pe)
+
+model = SegmentationNN(hp = hparams, alexNet=alexNet)
 optimizer = torch.optim.Adam(model.parameters(), lr=hparams['learning_rate'])
 
 # Datasets
