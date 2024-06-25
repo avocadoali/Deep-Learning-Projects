@@ -26,24 +26,20 @@ class SegmentationNN(nn.Module):
         down_block.append(self.down_block(3, 64 ))
         down_block.append(self.down_block(64, 128))
         down_block.append(self.down_block(128, 256))
-
         self.down_layers = nn.ModuleList(down_block)
  
         # Upsampling layers
         up_block = []
         up_block.append(self.up_block(256, 128))
         up_block.append(self.up_block(128, 64))
-
         self.up_layers = nn.ModuleList(up_block)
 
-        # Output Layer
+        # Output LayeJr
         self.output_layer = nn.Sequential(
             nn.ConvTranspose2d(64, 32, kernel_size=4 , stride=self.stride_up, padding=self.padding),
             nn.Conv2d(32, self.num_classes, kernel_size=1), 
         )
 
-
- 
     def down_block(self, input_channel, output_channel):
         block = nn.Sequential(
             nn.Conv2d(input_channel, output_channel, kernel_size=3 , stride=self.stride_down, padding=self.padding),
@@ -90,18 +86,16 @@ class SegmentationNN(nn.Module):
             x = down_layer(x)
             skip_connections.append(x)
 
-        
-        # reverse order
-        skip_connections = skip_connections[::-1]
-
 
         for up_layer in self.up_layers:
             skip_connection = skip_connections.pop()
-            if x.shape != skip_connection.shape:
-                x = F.pad(x, [0, skip_connection.shape[3] - x.shape[3], 0, skip_connection.shape[2] - x.shape[2]])
-            ;
-            concat_skip = torch.cat((skip_connection, x), dim=1)
-            x = up_layer(concat_skip)
+            # print()
+            # print(x.shape)
+            # print(skip_connection.shape)
+            x_add = skip_connection + x
+            # print(x_add.shape)
+            x = up_layer(x_add)
+            # x = up_layer(x)
 
 
         x = self.output_layer(x)
